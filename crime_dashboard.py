@@ -47,8 +47,33 @@ if dark_mode:
         .main {
             background-color: #2c2c2c;
         }
+        h1, h2, h3, h4 {
+            color: #ffcc00 !important;
+        }
         </style>
     """, unsafe_allow_html=True)
+else:
+    st.markdown("""
+        <style>
+        body {
+            background-color: #f8f9fa;
+            color: #212529;
+        }
+        .main {
+            background-color: #ffffff;
+        }
+        h1, h2, h3, h4 {
+            color: saddlebrown !important;
+        }
+        </style>
+    """, unsafe_allow_html=True)
+
+
+
+if dark_mode:
+    st.title("🌙 Crime Pattern Detection Dashboard (2020–2024)")
+else:
+    st.title("☀️ Crime Pattern Detection Dashboard (2020–2024)")
 
 # Sidebar - CSV Download
 @st.cache_data
