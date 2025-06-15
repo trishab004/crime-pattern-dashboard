@@ -1,96 +1,77 @@
 import streamlit as st
 import sqlite3
 import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
 import plotly.express as px
-import base64
 
 # CONFIG
 st.set_page_config(layout="wide")
-st.markdown("""
-    <style>
-    h1 {
-           color: saddlebrown !important;
-       }
-       h2 {
-           color: saddlebrown !important;
-       }
-    body {
-        background-color: #f8f9fa;
-        color: #212529;
-    }
-    .main {
-        background-color: #ffffff;
-        padding: 1rem;
-        border-radius: 10px;
-        box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
-    }
-    h1, h2, h3, h4 {
-        font-family: 'Segoe UI', sans-serif;
-    }
-    </style>
-""", unsafe_allow_html=True)
-
-st.title("🧭 Crime Pattern Detection Dashboard (2020–2024)")
-st.markdown("A data-driven lens into crime trends, patterns, and weapon usage across India.\n\n---")
 
 # Sidebar - Dark Mode Toggle
 dark_mode = st.sidebar.checkbox("🌙 Dark Mode")
+
+# Apply styles based on the mode
 if dark_mode:
     st.markdown("""
         <style>
-        body {
+        .stApp {
             background-color: #1e1e1e;
             color: #f1f1f1;
         }
-        .main {
-            background-color: #2c2c2c;
+        .main, .block-container {
+            background-color: #2c2c2c !important;
+            color: #f1f1f1 !important;
         }
         h1, h2, h3, h4 {
             color: #ffcc00 !important;
+        }
+        .css-1d391kg {  /* Sidebar */
+            background-color: #2c2c2c !important;
         }
         </style>
     """, unsafe_allow_html=True)
 else:
     st.markdown("""
         <style>
-        body {
+        .stApp {
             background-color: #f8f9fa;
             color: #212529;
         }
-        .main {
-            background-color: #ffffff;
+        .main, .block-container {
+            background-color: #ffffff !important;
+            color: #212529 !important;
         }
         h1, h2, h3, h4 {
             color: saddlebrown !important;
         }
+        .css-1d391kg {
+            background-color: #ffffff !important;
+        }
         </style>
     """, unsafe_allow_html=True)
 
-
-
+# Title
 if dark_mode:
     st.title("🌙 Crime Pattern Detection Dashboard (2020–2024)")
 else:
     st.title("☀️ Crime Pattern Detection Dashboard (2020–2024)")
 
-# Sidebar - CSV Download
-@st.cache_data
+st.markdown("A data-driven lens into crime trends, patterns, and weapon usage across India.\n\n---")
 
+# Helper to download CSV
+@st.cache_data
 def convert_df(df):
     return df.to_csv(index=False).encode('utf-8')
 
-# Database connection
+# Connect to SQLite
 conn = sqlite3.connect("crime_data.db")
 
-# SECTION 1: Total Crimes Count
+# SECTION 1
 st.header("📊 Overall Crime Overview")
 query1 = "SELECT COUNT(*) AS Total_Crimes FROM crimes"
 df1 = pd.read_sql_query(query1, conn)
 st.metric("Total Crimes (2020–2024)", df1['Total_Crimes'][0])
 
-# SECTION 2: Top 10 Cities with Most Crimes
+# SECTION 2
 st.header("🏙️ Top 10 Cities with Most Crimes")
 query2 = """
 SELECT City, COUNT(*) AS Total_Crimes
@@ -104,7 +85,7 @@ fig2 = px.bar(df2, x="City", y="Total_Crimes", color="City", title="City-wise Cr
 st.plotly_chart(fig2)
 st.download_button("Download City-wise Data", data=convert_df(df2), file_name="city_crimes.csv", mime='text/csv')
 
-# SECTION 3: Crime Type Distribution
+# SECTION 3
 st.header("🧾 Crime Types Distribution")
 query3 = """
 SELECT `Crime Description`, COUNT(*) AS Total
@@ -117,7 +98,7 @@ fig3 = px.bar(df3, x="Total", y="Crime Description", orientation='h', color="Cri
 st.plotly_chart(fig3)
 st.download_button("Download Crime Type Data", data=convert_df(df3), file_name="crime_types.csv", mime='text/csv')
 
-# SECTION 4: Weapon Usage
+# SECTION 4
 st.header("🔪 Weapon Usage in Crimes")
 query4 = """
 SELECT `Weapon Used` AS Weapon, COUNT(*) AS Total
@@ -132,7 +113,7 @@ fig4 = px.bar(df4, x="Total", y="Weapon", orientation='h', color="Weapon", title
 st.plotly_chart(fig4)
 st.download_button("Download Weapon Data", data=convert_df(df4), file_name="weapon_usage.csv", mime='text/csv')
 
-# SECTION 5: Gender-wise Victim Distribution
+# SECTION 5
 st.header("🚻 Gender-wise Victim Distribution")
 query5 = """
 SELECT `Victim Gender` AS Gender, COUNT(*) AS Total
@@ -144,7 +125,7 @@ fig5 = px.pie(df5, names='Gender', values='Total', title="Victim Gender Distribu
 st.plotly_chart(fig5)
 st.download_button("Download Gender-wise Data", data=convert_df(df5), file_name="victim_gender.csv", mime='text/csv')
 
-# SECTION 6: Age-wise Victim Distribution
+# SECTION 6
 st.header("👶 Age Distribution of Victims")
 query6 = """
 SELECT `Victim Age` FROM crimes
@@ -160,11 +141,9 @@ fig6 = px.bar(age_counts, x="Age Group", y="Total", color="Age Group", title="Vi
 st.plotly_chart(fig6)
 st.download_button("Download Age-wise Victim Data", data=convert_df(df6), file_name="Age-wise_Victim.csv", mime='text/csv')
 
-# SECTION 7: Time of Day Crime Trend
+# SECTION 7
 st.header("🕒 Crime Trend by Time of Occurrence")
-query7 = """
-SELECT `Time of Occurrence` FROM crimes
-"""
+query7 = "SELECT `Time of Occurrence` FROM crimes"
 df7 = pd.read_sql_query(query7, conn)
 df7 = df7.dropna()
 df7['Hour'] = df7['Time of Occurrence'].str[:2].astype(int)
@@ -174,7 +153,7 @@ fig7 = px.line(hourly, x="Hour", y="Total", markers=True, title="Crimes by Hour 
 st.plotly_chart(fig7)
 st.download_button("Download Time of Day Crime Trend Data", data=convert_df(df7), file_name="Time_of_Day_Crime_Trend.csv", mime='text/csv')
 
-# SECTION 8: Year-wise Crime Count
+# SECTION 8
 st.header("📅 Year-wise Crime Trend")
 query8 = """
 SELECT strftime('%Y', `Date of Occurrence`) AS Year, COUNT(*) AS Total
@@ -187,7 +166,7 @@ fig8 = px.line(df8, x="Year", y="Total", markers=True, title="Yearly Crime Trend
 st.plotly_chart(fig8)
 st.download_button("Download Year-wise Crime Count Data", data=convert_df(df8), file_name="Year-wise_Crime_Count.csv", mime='text/csv')
 
-# SECTION 9: Case Closure Status
+# SECTION 9
 st.header("🗂️ Case Closure Status")
 query9 = """
 SELECT `Case Closed`, COUNT(*) AS Total
@@ -199,7 +178,7 @@ fig9 = px.pie(df9, names='Case Closed', values='Total', title="Case Status")
 st.plotly_chart(fig9)
 st.download_button("Download Case Closure Status Data", data=convert_df(df9), file_name="Case_Closure_Status.csv", mime='text/csv')
 
-# SECTION 10: Crime Domain Distribution
+# SECTION 10
 st.header("🧭 Crime Domain Distribution")
 query10 = """
 SELECT `Crime Domain`, COUNT(*) AS Total
