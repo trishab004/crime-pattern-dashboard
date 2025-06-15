@@ -22,7 +22,7 @@ A powerful data visualization dashboard built with Streamlit, analyzing crime tr
 - `requirements.txt` – (Optional) for deployment
 
 ## 🌐 Live App
-👉 [Click here to view it live]([YOUR-LINK-HERE](https://crime-pattern-dashboard-xfgmsfsm3jxobfsprjtkza.streamlit.app/))
+👉 [Click here to view it live](https://crime-pattern-dashboard-xfgmsfsm3jxobfsprjtkza.streamlit.app/)
 
 ---
 
